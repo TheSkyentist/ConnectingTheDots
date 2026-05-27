@@ -1,0 +1,340 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Base
+───────────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:          #07070e;
+  --accent:      #c87060;
+  --accent-dim:  rgba(200, 112, 96, 0.25);
+  --text:        #f0e8d8;
+  --text-muted:  #9090a8;
+  --card-bg:     rgba(10, 9, 20, 0.88);
+  --card-border: rgba(200, 112, 96, 0.18);
+  --radius:      16px;
+  --font-serif:  'Georgia', 'Times New Roman', serif;
+  --font-sans:   system-ui, -apple-system, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Fixed canvas — always behind everything
+───────────────────────────────────────────────────────────────────────────── */
+#canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Navigation
+───────────────────────────────────────────────────────────────────────────── */
+#nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem 2rem;
+  background: rgba(7, 7, 14, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(200, 112, 96, 0.08);
+  transition: background 0.3s;
+}
+
+#nav.scrolled {
+  background: rgba(7, 7, 14, 0.82);
+  border-bottom-color: rgba(200, 112, 96, 0.18);
+}
+
+#nav a {
+  color: rgba(200, 175, 165, 0.65);
+  text-decoration: none;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+#nav a:hover,
+#nav a.active {
+  color: var(--text);
+  background: rgba(200, 112, 96, 0.12);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Page wrapper (sits above the fixed canvas)
+───────────────────────────────────────────────────────────────────────────── */
+#page {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Hero section
+───────────────────────────────────────────────────────────────────────────── */
+#hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+#hero-text {
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.4s forwards;
+}
+
+#title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+#subtitle {
+  margin-top: 0.6em;
+  font-size: clamp(0.8rem, 1.8vw, 1.15rem);
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+#hero-venue {
+  margin-top: 1.6em;
+  font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+  letter-spacing: 0.22em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* ── Scroll hint arrow ───────────────────────────────────────────────────── */
+#scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  /* Pop in with a scale-bounce so it catches the eye, then settles */
+  animation: hintAppear 1s ease 0.8s forwards;
+  transition: opacity 0.5s;
+  cursor: pointer;
+}
+
+#scroll-hint span {
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+#scroll-hint svg {
+  color: var(--accent);
+  /* Bob starts just after the entrance animation finishes */
+  animation: bob 2s ease-in-out 1.8s infinite;
+}
+
+
+@keyframes hintAppear {
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.7); }
+  55%  { opacity: 1; transform: translateX(-50%) scale(1.18); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Content area
+───────────────────────────────────────────────────────────────────────────── */
+#content {
+  padding: 3rem 1.5rem 6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Section cards
+───────────────────────────────────────────────────────────────────────────── */
+.card {
+  width: 100%;
+  max-width: 860px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 2.5rem 2.8rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  scroll-margin-top: 60px;
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  text-transform: uppercase;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 1.8rem;
+}
+
+/* Image placeholder */
+.card-img {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  border: 1px dashed rgba(200, 112, 96, 0.25);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(200, 112, 96, 0.3);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 1.6rem;
+}
+
+/* Two-column layout for cards that have image + text side by side */
+.card-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .card-cols { grid-template-columns: 1fr; }
+  .card { padding: 1.8rem 1.5rem; }
+}
+
+.card p {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: rgba(240, 232, 216, 0.75);
+  margin-bottom: 1rem;
+}
+
+.card p:last-child { margin-bottom: 0; }
+
+/* ── Committee / speaker grids ───────────────────────────────────────────── */
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.person-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px dashed rgba(200, 112, 96, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(200, 112, 96, 0.3);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.person-name {
+  font-size: 0.85rem;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.person-affil {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ── Registration call-to-action ─────────────────────────────────────────── */
+.cta-box {
+  margin-top: 1.5rem;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: rgba(200, 112, 96, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.btn {
+  padding: 0.55rem 1.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
