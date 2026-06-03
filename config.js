@@ -17,7 +17,7 @@ const CONFIG = {
     [20, 70, 58], // orange-red
     [0, 60, 50], // deep red
     [340, 65, 55], // rose-red
-    [199, 72, 56, 1 / 100], // steel blue (downweighted)
+    [199, 72, 56, 1 / 20], // steel blue (downweighted)
   ],
 
   // ── Population ─────────────────────────────────────────────────────────────
