@@ -318,7 +318,7 @@ body {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    border: 2px solid var(--accent);
+    border: 3px solid var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
