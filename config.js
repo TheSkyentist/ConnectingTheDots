@@ -25,8 +25,8 @@ const CONFIG = {
   connectDistFraction: 0.22,
 
   // ── Dot movement ───────────────────────────────────────────────────────────
-  speedMin: 0.15,
-  speedMax: 0.4,
+  speedMin: 0.05,
+  speedMax: 0.25,
 
   // ── Dot size (radius in px) ─────────────────────────────────────────────────
   sizeMin: 1.2,
