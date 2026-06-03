@@ -46,8 +46,10 @@
       this.vy = Math.sin(angle) * speed;
       this.r = rand(CONFIG.sizeMin, CONFIG.sizeMax);
 
-      const [h, s, l] =
-        CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
+      const totalWeight = CONFIG.palette.reduce((sum, e) => sum + (e[3] ?? 1), 0);
+      let pick = Math.random() * totalWeight;
+      const entry = CONFIG.palette.find((e) => (pick -= e[3] ?? 1) < 0) ?? CONFIG.palette[0];
+      const [h, s, l] = entry;
       const jitter = (Math.random() - 0.5) * 30;
       this.h = h + jitter;
       this.s = s;

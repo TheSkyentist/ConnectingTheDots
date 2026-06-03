@@ -8,7 +8,8 @@ const CONFIG = {
   bgColor: "#07070e",
 
   // ── Dot colour palette ─────────────────────────────────────────────────────
-  // Each entry: [hue (0–360), saturation (%), lightness (%)]
+  // Each entry: [hue (0–360), saturation (%), lightness (%), weight?]
+  // Weight defaults to 1.0; relative fractions control selection probability.
   // Hue jitter of ±15° is applied automatically so each dot varies slightly.
   palette: [
     [355, 75, 62], // vivid red
@@ -16,6 +17,7 @@ const CONFIG = {
     [20, 70, 58], // orange-red
     [0, 60, 50], // deep red
     [340, 65, 55], // rose-red
+    [199, 72, 56, 1 / 100], // steel blue (downweighted)
   ],
 
   // ── Population ─────────────────────────────────────────────────────────────
