@@ -1,18 +1,18 @@
 // Canvas dot-connection animation — driven by CONFIG (config.js)
 
 (function () {
-  const canvas = document.getElementById('canvas');
-  const ctx    = canvas.getContext('2d');
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
 
   let W, H, connectDist;
 
   function resize() {
-    W = canvas.width  = window.innerWidth;
+    W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
     connectDist = Math.min(W, H) * CONFIG.connectDistFraction;
   }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
 
   // ── Background stars ──────────────────────────────────────────────────────
   const stars = Array.from({ length: CONFIG.starCount }, () => ({
@@ -32,41 +32,49 @@
   }
 
   // ── Dot class ─────────────────────────────────────────────────────────────
-  function rand(min, max) { return min + Math.random() * (max - min); }
+  function rand(min, max) {
+    return min + Math.random() * (max - min);
+  }
 
   class Dot {
     constructor() {
-      this.x  = Math.random() * W;
-      this.y  = Math.random() * H;
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
       const angle = Math.random() * Math.PI * 2;
       const speed = rand(CONFIG.speedMin, CONFIG.speedMax);
       this.vx = Math.cos(angle) * speed;
       this.vy = Math.sin(angle) * speed;
-      this.r  = rand(CONFIG.sizeMin, CONFIG.sizeMax);
+      this.r = rand(CONFIG.sizeMin, CONFIG.sizeMax);
 
-      const [h, s, l] = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
+      const [h, s, l] =
+        CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
       const jitter = (Math.random() - 0.5) * 30;
-      this.hsl = `${h + jitter}, ${s}%, ${l}%`;
+      this.h = h + jitter;
+      this.s = s;
+      this.l = l;
+      this.hsl = `${this.h}, ${s}%, ${l}%`;
 
-      this.tFadeIn  = rand(CONFIG.fadeInMin,  CONFIG.fadeInMax)  | 0;
+      this.tFadeIn = rand(CONFIG.fadeInMin, CONFIG.fadeInMax) | 0;
       this.tFadeOut = rand(CONFIG.fadeOutMin, CONFIG.fadeOutMax) | 0;
-      this.tAlive   = rand(CONFIG.aliveMin,   CONFIG.aliveMax)   | 0;
-      this.tTotal   = this.tFadeIn + this.tAlive + this.tFadeOut;
-      this.age      = 0;
-      this.opacity  = 0;
+      this.tAlive = rand(CONFIG.aliveMin, CONFIG.aliveMax) | 0;
+      this.tTotal = this.tFadeIn + this.tAlive + this.tFadeOut;
+      this.age = 0;
+      this.opacity = 0;
     }
 
-    get alive() { return this.age < this.tTotal; }
+    get alive() {
+      return this.age < this.tTotal;
+    }
 
     tick() {
       this.age++;
       this.x += this.vx;
       this.y += this.vy;
 
-      if (this.x < -20)      this.x = W + 20;
-      if (this.x > W + 20)   this.x = -20;
-      if (this.y < -20)      this.y = H + 20;
-      if (this.y > H + 20)   this.y = -20;
+      if (this.x < -20) this.x = W + 20;
+      if (this.x > W + 20) this.x = -20;
+      if (this.y < -20) this.y = H + 20;
+      if (this.y > H + 20) this.y = -20;
 
       if (this.age < this.tFadeIn) {
         this.opacity = this.age / this.tFadeIn;
@@ -80,7 +88,14 @@
 
     draw() {
       // Glow halo
-      const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 5);
+      const glow = ctx.createRadialGradient(
+        this.x,
+        this.y,
+        0,
+        this.x,
+        this.y,
+        this.r * 5,
+      );
       glow.addColorStop(0, `hsla(${this.hsl}, ${this.opacity * 0.35})`);
       glow.addColorStop(1, `hsla(${this.hsl}, 0)`);
       ctx.beginPath();
@@ -109,34 +124,53 @@
     const n = dots.length;
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        const dx   = dots[i].x - dots[j].x;
-        const dy   = dots[i].y - dots[j].y;
+        const dx = dots[i].x - dots[j].x;
+        const dy = dots[i].y - dots[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > connectDist) continue;
 
         const proximity = 1 - dist / connectDist;
-        const alpha = proximity
-          * Math.min(dots[i].opacity, dots[j].opacity)
-          * CONFIG.lineOpacity;
+        const alpha =
+          proximity *
+          Math.min(dots[i].opacity, dots[j].opacity) *
+          CONFIG.lineOpacity;
 
-        const grad = ctx.createLinearGradient(
-          dots[i].x, dots[i].y, dots[j].x, dots[j].y
-        );
-        grad.addColorStop(0, `hsla(${dots[i].hsl}, ${alpha})`);
-        grad.addColorStop(1, `hsla(${dots[j].hsl}, ${alpha})`);
-
+        let hi = dots[i].h, hj = dots[j].h;
+        if (Math.abs(hi - hj) > 180) { if (hi < hj) hi += 360; else hj += 360; }
+        const avgH = ((hi + hj) / 2) % 360;
+        const avgS = (dots[i].s + dots[j].s) / 2;
+        const avgL = (dots[i].l + dots[j].l) / 2;
         ctx.beginPath();
         ctx.moveTo(dots[i].x, dots[i].y);
         ctx.lineTo(dots[j].x, dots[j].y);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth   = proximity * 1.2;
+        ctx.strokeStyle = `hsla(${avgH}, ${avgS}%, ${avgL}%, ${alpha})`;
+        ctx.lineWidth = proximity * CONFIG.lineWidthMax;
         ctx.stroke();
       }
     }
   }
 
+  // ── FPS counter ───────────────────────────────────────────────────────────
+  let fps = 0;
+  let lastTime = performance.now();
+
+  function updateFPS(now) {
+    const dt = now - lastTime;
+    lastTime = now;
+    fps += (1000 / dt - fps) * 0.1; // exponential moving average
+  }
+
+  function drawFPS() {
+    if (!CONFIG.showFPS) return;
+    ctx.font = "bold 12px monospace";
+    ctx.fillStyle = "rgba(144, 144, 168, 0.8)";
+    ctx.fillText(`${fps.toFixed(1)} fps`, 12, H - 12);
+  }
+
   // ── Main render loop ──────────────────────────────────────────────────────
-  function frame() {
+  function frame(now) {
+    updateFPS(now);
+
     ctx.fillStyle = CONFIG.bgColor;
     ctx.fillRect(0, 0, W, H);
 
@@ -151,8 +185,9 @@
     drawConnections();
     for (const d of dots) d.draw();
 
+    drawFPS();
     requestAnimationFrame(frame);
   }
 
-  frame();
+  requestAnimationFrame(frame);
 })();
