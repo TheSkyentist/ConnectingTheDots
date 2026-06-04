@@ -29,4 +29,4 @@ jobs:
           SFTP_USER: mpg.connect-the-dots
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           LOCAL_DIR: output
-          REMOTE_DIR: /web/mpg.connect-the-dots/www/connectthedots
+          REMOTE_DIR: www/connectthedots
