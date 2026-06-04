@@ -1,32 +1,32 @@
-# name: deploy-site
+name: deploy-site
 
-# on:
-#   push:
-#     branches: [main]
-#   workflow_dispatch:
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@main
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
 
-#       - name: Stage site files
-#         run: |
-#           mkdir -p output
-#           cp index.html config.js output/
-#           cp -R css/ js/ output/
+      - name: Stage site files
+        run: |
+          mkdir -p output
+          cp index.html config.js output/
+          cp -R css/ js/ media/ output/
 
-#       - name: Deploy to SFTP
-#         run: |
-#           pip install paramiko
-#           python deploy_sftp.py
-#         env:
-#           SFTP_HOST: vwebfile.gwdg.de
-#           SFTP_PORT: "2222"
-#           SFTP_USER: raphael.hviding
-#           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-#           LOCAL_DIR: output
-#           REMOTE_DIR: www/PLACEHOLDER
+      - name: Deploy to SFTP
+        run: |
+          pip install paramiko
+          python deploy_sftp.py
+        env:
+          SFTP_HOST: vwebfile.gwdg.de
+          SFTP_PORT: "2222"
+          SFTP_USER: mpg.connect-the-dots
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          LOCAL_DIR: output
+          REMOTE_DIR: /web/mpg.connect-the-dots/www/connectthedots

@@ -19,6 +19,8 @@ import sys
 
 import paramiko
 
+PRESERVE = {'favicon.ico', 'robots.txt'}
+
 
 def rm_rf(sftp, path):
     """Recursively remove all contents of a remote directory."""
@@ -28,6 +30,9 @@ def rm_rf(sftp, path):
         return
 
     for item in items:
+        if item.filename in PRESERVE:
+            print(f'  Preserved:    {path}/{item.filename}')
+            continue
         remote_path = f'{path}/{item.filename}'
         if stat.S_ISDIR(item.st_mode):
             rm_rf(sftp, remote_path)
